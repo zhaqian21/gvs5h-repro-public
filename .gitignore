@@ -1,0 +1,24 @@
+# experiment outputs / workspaces
+runs/
+**/runs/
+*.ckpt.jsonl
+transcript.jsonl
+
+# caches / env
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+.cache/
+
+# logs / tmp
+*.log
+logs/
+tmp/
+
+# os / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

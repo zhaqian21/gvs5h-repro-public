@@ -1,0 +1,26 @@
+--- a/codebase/v2-current/escalation/multiagent.py
++++ b/codebase/v2-current/escalation/multiagent.py
+@@ -15,6 +15,11 @@
+ from orchestrator import chat
+ 
+ MODEL = os.environ.get("MULTIAGENT_MODEL", "groq:qwen/qwen3.6-27b")
++# Heterogeneous-model extension: lead (manager) and helper (worker) roles may use
++# different models. Both default to MODEL, so unset => identical to single-model behavior.
++LEAD_MODEL = os.environ.get("LEAD_MODEL", MODEL)
++HELPER_MODEL = os.environ.get("HELPER_MODEL", MODEL)
++LEAD_ROLES = {"primary_plan", "primary_manage"}
+ MAX_ITERS = int(os.environ.get("MULTIAGENT_MAX_ITERS", "10"))
+ STRICT_FORMAT = os.environ.get("MULTIAGENT_STRICT_FORMAT", "auto")
+ 
+@@ -66,8 +71,9 @@
+ 
+ def _chat(ws, role, messages, temperature, meta=None):
+     m = meta if meta is not None else {}
+-    resp = chat(MODEL, messages, temperature=temperature, meta=m)
+-    _record(ws, {"t": time.time(), "role": role, "request": messages, "response": resp,
++    model = LEAD_MODEL if role in LEAD_ROLES else HELPER_MODEL
++    resp = chat(model, messages, temperature=temperature, meta=m)
++    _record(ws, {"t": time.time(), "role": role, "model": model, "request": messages, "response": resp,
+                  "reasoning": m.get("reasoning"), "thinking_blocks": m.get("thinking_blocks"),
+                  # Anthropic returns a SUMMARY of the thinking; vLLM/DashScope return the real
+                  # chain of thought in the same `reasoning` field. Without this flag the two are
